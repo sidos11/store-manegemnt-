@@ -1,0 +1,21 @@
+{
+  "appTitle": "Gestion de Magasin",
+  "products": "Produits",
+  "sales": "Ventes",
+  "reports": "Rapports",
+  "addProduct": "Ajouter Produit",
+  "productName": "Nom du produit",
+  "price": "Prix",
+  "quantity": "Quantité",
+  "add": "Ajouter",
+  "delete": "Supprimer",
+  "noProducts": "Aucun produit",
+  "newSale": "Nouvelle Vente",
+  "selectProduct": "Sélectionner un produit",
+  "quantitySold": "Quantité vendue",
+  "recordSale": "Enregistrer la vente",
+  "saleRecorded": "Vente enregistrée !",
+  "fillAllFields": "Remplis tous les champs !",
+  "totalSales": "Total des ventes",
+  "language": "Langue"
+}

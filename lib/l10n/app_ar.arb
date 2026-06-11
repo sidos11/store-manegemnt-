@@ -1,0 +1,21 @@
+{
+  "appTitle": "إدارة المتجر",
+  "products": "المنتجات",
+  "sales": "المبيعات",
+  "reports": "التقارير",
+  "addProduct": "إضافة منتج",
+  "productName": "اسم المنتج",
+  "price": "السعر",
+  "quantity": "الكمية",
+  "add": "إضافة",
+  "delete": "حذف",
+  "noProducts": "لا توجد منتجات",
+  "newSale": "بيع جديد",
+  "selectProduct": "اختر منتجاً",
+  "quantitySold": "الكمية المباعة",
+  "recordSale": "تسجيل البيع",
+  "saleRecorded": "تم تسجيل البيع !",
+  "fillAllFields": "املأ جميع الحقول !",
+  "totalSales": "إجمالي المبيعات",
+  "language": "اللغة"
+}

@@ -15,22 +15,21 @@ class Sale {
     required this.date,
   });
 
-  // JSON → Sale
   factory Sale.fromJson(Map<String, dynamic> json) {
     return Sale(
       id: json['id'],
       productId: json['productId'],
-      productName: json['productName'],
+      productName: json['productName'] ?? '',
       quantity: json['quantity'],
       totalPrice: json['totalPrice'].toDouble(),
-      date: json['date'],
+      date: json['date'] ?? '',
     );
   }
 
-  // Sale → JSON
   Map<String, dynamic> toJson() {
     return {
       'productId': productId,
+      'productName': productName,
       'quantity': quantity,
       'totalPrice': totalPrice,
       'date': date,
