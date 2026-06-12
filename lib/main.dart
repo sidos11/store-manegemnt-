@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:store_management/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
 import 'controllers/product_controller.dart';
 import 'controllers/sale_controller.dart';
+
 import 'screens/product_screen.dart';
 import 'screens/sales_screen.dart';
 import 'screens/reports_screen.dart';
+import 'screens/add_product_screen.dart';
 
 void main() {
   runApp(
@@ -37,6 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeProvider = context.watch<LocaleProvider>();
+
     return MaterialApp(
       title: 'SMS Store',
       debugShowCheckedModeBanner: false,
@@ -49,10 +52,17 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6C63FF)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4361ee)),
         fontFamily: 'Roboto',
+        useMaterial3: true,
       ),
       home: const HomeScreen(),
+      routes: {
+        '/products': (context) => ProductsScreen(),
+        '/sales': (context) => const SalesScreenModern(),
+        '/reports': (context) => const ReportsScreen(),
+        '/add-product': (context) => const AddProductScreen(),
+      },
     );
   }
 }
@@ -68,8 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const ProductScreen(),
-    const SalesScreen(),
+    ProductsScreen(),
+    const SalesScreenModern(),
     const ReportsScreen(),
   ];
 
@@ -79,19 +89,31 @@ class _HomeScreenState extends State<HomeScreen> {
     final localeProvider = context.read<LocaleProvider>();
 
     final List<Map<String, dynamic>> navItems = [
-      {'label': l10n.products, 'icon': Icons.inventory_2_outlined, 'activeIcon': Icons.inventory_2},
-      {'label': l10n.sales, 'icon': Icons.point_of_sale_outlined, 'activeIcon': Icons.point_of_sale},
-      {'label': l10n.reports, 'icon': Icons.bar_chart_outlined, 'activeIcon': Icons.bar_chart},
+      {
+        'label': l10n.products,
+        'icon': Icons.inventory_2_outlined,
+        'activeIcon': Icons.inventory_2,
+      },
+      {
+        'label': l10n.sales,
+        'icon': Icons.point_of_sale_outlined,
+        'activeIcon': Icons.point_of_sale,
+      },
+      {
+        'label': l10n.reports,
+        'icon': Icons.bar_chart_outlined,
+        'activeIcon': Icons.bar_chart,
+      },
     ];
 
     final List<Color> gradients = [
-      const Color(0xFF6C63FF),
-      const Color(0xFF11998E),
-      const Color(0xFFFF6B6B),
+      const Color(0xFF4361ee),
+      const Color(0xFF2346d5),
+      const Color(0xFF463fd0),
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -101,8 +123,10 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [gradients[_currentIndex],
-                      gradients[_currentIndex].withOpacity(0.7)],
+                  colors: [
+                    gradients[_currentIndex],
+                    gradients[_currentIndex].withOpacity(0.7),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -114,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF2D3436),
+                color: Color(0xFF191c1d),
               ),
             ),
           ],
@@ -123,11 +147,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F6FA),
+              color: const Color(0xFFF8F9FA),
               borderRadius: BorderRadius.circular(10),
             ),
             child: IconButton(
-              icon: const Icon(Icons.language, color: Color(0xFF6C63FF)),
+              icon: const Icon(Icons.language, color: Color(0xFF4361ee)),
+              tooltip: 'Toggle Language',
               onPressed: () {
                 final current = context.read<LocaleProvider>().locale;
                 localeProvider.setLocale(
@@ -154,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(navItems.length, (index) {
@@ -179,6 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           isActive

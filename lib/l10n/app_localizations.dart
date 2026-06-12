@@ -211,6 +211,36 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Langue'**
   String get language;
+
+  /// No description provided for @deleteConfirmation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer'**
+  String get deleteConfirmation;
+
+  /// No description provided for @cancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get cancel;
+
+  /// No description provided for @productDeleted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Produit supprimé avec succès !'**
+  String get productDeleted;
+
+  /// No description provided for @manageInventory.
+  ///
+  /// In fr, this message translates to:
+  /// **'Gestion de stock'**
+  String get manageInventory;
+
+  /// No description provided for @searchProducts.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher un produit'**
+  String get searchProducts;
 }
 
 class _AppLocalizationsDelegate

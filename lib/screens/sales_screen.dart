@@ -5,14 +5,14 @@ import '../controllers/sale_controller.dart';
 import '../models/sale.dart';
 import 'package:store_management/l10n/app_localizations.dart';
 
-class SalesScreen extends StatefulWidget {
-  const SalesScreen({super.key});
+class SalesScreenModern extends StatefulWidget {
+  const SalesScreenModern({super.key});
 
   @override
-  State<SalesScreen> createState() => _SalesScreenState();
+  State<SalesScreenModern> createState() => _SalesScreenModernState();
 }
 
-class _SalesScreenState extends State<SalesScreen> {
+class _SalesScreenModernState extends State<SalesScreenModern> {
   int? _selectedProductId;
   String? _selectedProductName;
   double? _selectedProductPrice;
@@ -24,21 +24,84 @@ class _SalesScreenState extends State<SalesScreen> {
     Future.microtask(() => context.read<ProductController>().loadProducts());
   }
 
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(message, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFba1a1a),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(message, style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF006c4f),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
   void _submit() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedProductId == null || _quantityController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.fillAllFields),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+
+    if (_selectedProductId == null) {
+      _showErrorSnackBar(l10n.selectProduct);
       return;
     }
 
-    final quantity = int.parse(_quantityController.text);
+    if (_quantityController.text.isEmpty) {
+      _showErrorSnackBar('${l10n.quantity} ${l10n.fillAllFields}');
+      return;
+    }
+
+    int? quantity = int.tryParse(_quantityController.text);
+    if (quantity == null || quantity <= 0) {
+      _showErrorSnackBar('Please enter a valid quantity');
+      return;
+    }
+
+    final products = context.read<ProductController>().products;
+    final hasProduct = products.any((p) => p.id == _selectedProductId);
+
+    if (!hasProduct) {
+      _showErrorSnackBar('Product not found');
+      return;
+    }
+
+    final product = products.firstWhere((p) => p.id == _selectedProductId);
+
+    if (product.quantity < quantity) {
+      _showErrorSnackBar('Not enough stock. Available: ${product.quantity}');
+      return;
+    }
+
     final totalPrice = (_selectedProductPrice ?? 0) * quantity;
     final now = DateTime.now().toIso8601String();
 
@@ -51,15 +114,7 @@ class _SalesScreenState extends State<SalesScreen> {
     );
 
     await context.read<SaleController>().addSale(sale);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.saleRecorded),
-        backgroundColor: Colors.green.shade400,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    _showSuccessSnackBar(l10n.saleRecorded);
 
     setState(() {
       _selectedProductId = null;
@@ -74,31 +129,26 @@ class _SalesScreenState extends State<SalesScreen> {
     final products = context.watch<ProductController>().products;
     final l10n = AppLocalizations.of(context)!;
 
+    final bool productExists = products.any((p) => p.id == _selectedProductId);
+    final int? safeSelectedId = productExists ? _selectedProductId : null;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF11998E), Color(0xFF38EF7D)],
+                  colors: [Color(0xFF4361ee), Color(0xFF605bea)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF11998E).withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,14 +156,21 @@ class _SalesScreenState extends State<SalesScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.newSale,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 14)),
-                      const Text('Enregistrer',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold)),
+                      Text(
+                        l10n.newSale,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        l10n.recordSale,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   Container(
@@ -122,114 +179,95 @@ class _SalesScreenState extends State<SalesScreen> {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.point_of_sale,
-                        color: Colors.white, size: 32),
+                    child: const Icon(
+                      Icons.point_of_sale,
+                      color: Colors.white,
+                      size: 32,
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 28),
-
-            Text('Sélection',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800)),
+            Text(
+              l10n.selectProduct,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
             const SizedBox(height: 16),
-
-            // Dropdown
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: const Color(0xFFe1e3e4)),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButtonFormField<int>(
-                  value: _selectedProductId,
-                  hint: Row(
-                    children: [
-                      Icon(Icons.shopping_bag_outlined,
-                          color: Colors.grey.shade400),
-                      const SizedBox(width: 8),
-                      Text(l10n.selectProduct,
-                          style: TextStyle(color: Colors.grey.shade400)),
-                    ],
+                  value: safeSelectedId,
+                  hint: Text(
+                    l10n.selectProduct,
+                    style: TextStyle(color: Colors.grey.shade400),
                   ),
                   decoration: const InputDecoration(border: InputBorder.none),
                   items: products.map((p) {
                     return DropdownMenuItem<int>(
                       value: p.id,
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF11998E).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.shopping_bag,
-                                color: Color(0xFF11998E), size: 18),
-                          ),
-                          const SizedBox(width: 10),
-                          Text('${p.name} — ${p.price} MRU',
-                              style: const TextStyle(fontWeight: FontWeight.w500)),
-                        ],
+                      child: Text(
+                        '${p.name} — ${p.price.toStringAsFixed(0)} MRU (${p.quantity} p.)',
                       ),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    final product = products.firstWhere((p) => p.id == value);
-                    setState(() {
-                      _selectedProductId = value;
-                      _selectedProductName = product.name;
-                      _selectedProductPrice = product.price;
-                    });
+                    if (value != null) {
+                      final product = products.firstWhere((p) => p.id == value);
+                      setState(() {
+                        _selectedProductId = value;
+                        _selectedProductName = product.name;
+                        _selectedProductPrice = product.price;
+                      });
+                    }
                   },
+                  isExpanded: true,
                 ),
               ),
             ),
             const SizedBox(height: 16),
-
-            // Quantity field
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: const Color(0xFFe1e3e4)),
               ),
               child: TextField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: l10n.quantitySold,
-                  prefixIcon:
-                      const Icon(Icons.numbers, color: Color(0xFF11998E)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                  prefixIcon: const Icon(
+                    Icons.numbers,
+                    color: Color(0xFF4361ee),
                   ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  labelStyle: TextStyle(color: Colors.grey.shade500),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
                 ),
               ),
             ),
-
-            // Prix total preview
+            if (safeSelectedId != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Stock available: ${products.firstWhere((p) => p.id == safeSelectedId).quantity} units',
+                  style: const TextStyle(
+                    color: Color(0xFF4361ee),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             if (_selectedProductPrice != null &&
                 _quantityController.text.isNotEmpty)
               Container(
@@ -238,44 +276,47 @@ class _SalesScreenState extends State<SalesScreen> {
                 decoration: BoxDecoration(
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green.shade200),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Total',
-                        style: TextStyle(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.bold)),
                     Text(
-                      '${((_selectedProductPrice ?? 0) * (int.tryParse(_quantityController.text) ?? 0)).toStringAsFixed(2)} MRU',
+                      'Total',
                       style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18),
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '${((_selectedProductPrice ?? 0) * (int.tryParse(_quantityController.text) ?? 0)).toStringAsFixed(0)} MRU',
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ],
                 ),
               ),
-
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: _submit,
-                icon: const Icon(Icons.check_circle_outline,
-                    color: Colors.white),
-                label: Text(l10n.recordSale,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF11998E),
+                  backgroundColor: const Color(0xFF4361ee),
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 4,
+                ),
+                child: Text(
+                  l10n.add,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -283,5 +324,11 @@ class _SalesScreenState extends State<SalesScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
   }
 }

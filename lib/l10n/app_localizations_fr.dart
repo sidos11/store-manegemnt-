@@ -64,4 +64,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get language => 'Langue';
+
+  @override
+  String get deleteConfirmation => 'Voulez-vous vraiment supprimer';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get productDeleted => 'Produit supprimé avec succès !';
+
+  @override
+  String get manageInventory => 'Gestion de stock';
+
+  @override
+  String get searchProducts => 'Rechercher un produit';
 }

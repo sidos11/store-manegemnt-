@@ -17,5 +17,10 @@
   "saleRecorded": "تم تسجيل البيع !",
   "fillAllFields": "املأ جميع الحقول !",
   "totalSales": "إجمالي المبيعات",
-  "language": "اللغة"
+  "language": "اللغة",
+  "deleteConfirmation": "هل أنت متأكد من حذف",
+  "cancel": "إلغاء",
+  "productDeleted": "تم حذف المنتج بنجاح !",
+  "manageInventory": "إدارة المخزون",
+  "searchProducts": "البحث عن منتج"
 }

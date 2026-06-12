@@ -1,0 +1,61 @@
+Architecture de l'application Store Management
+
+1. Structure générale
+
+- main.dart
+  - Point d'entrée de l'application Flutter.
+  - Configure MaterialApp et les providers.
+  - Définit la locale active, les écrans principaux et les routes.
+
+- lib/controllers/
+  - Contient la logique d'état et la gestion des données.
+  - ProductController : charge, ajoute, met à jour et supprime des produits.
+  - SaleController : charge les ventes, ajoute une vente, calcule le total.
+
+- lib/services/
+  - Contient les accès au backend via HTTP.
+  - ProductService : appels REST vers /api/products.
+  - SaleService : appels REST vers /api/sales.
+
+- lib/screens/
+  - Contient les interfaces utilisateur.
+  - product_screen.dart : affichage des produits.
+  - sales_screen.dart : enregistrement des ventes.
+  - reports_screen.dart : rapports et totaux.
+  - add_product_screen.dart : formulaire d'ajout de produit.
+
+- lib/l10n/
+  - Contient les fichiers de localisation.
+  - app_localizations.dart : interface de traduction et delegate.
+  - app_localizations_fr.dart : texte français.
+  - app_localizations_ar.dart : texte arabe.
+
+
+2. Flux et logique générale
+
+- L'application démarre avec main(), qui lance runApp() et fournit des providers.
+- MyApp lit la locale active depuis LocaleProvider et configure MaterialApp.
+- HomeScreen gère la navigation principale entre les écrans Produits, Ventes et Rapports.
+- Les écrans utilisent AppLocalizations.of(context) pour obtenir le texte localisé.
+- Les controllers (ProductController, SaleController) gèrent l'état et notifient l'UI.
+- Les services communiquent avec le backend pour lire et écrire les données.
+
+
+3. Gestion des langues
+
+- LocaleProvider stocke la langue actuelle dans une propriété Locale.
+- Lorsque l'utilisateur appuie sur le bouton de langue, LocaleProvider bascule entre fr et ar.
+- MaterialApp utilise la locale fournie par LocaleProvider.
+- AppLocalizations.delegate charge la bonne classe de traduction :
+  - AppLocalizationsFr pour le français.
+  - AppLocalizationsAr pour l'arabe.
+- Les écrans utilisent les chaînes localisées telles que l10n.products, l10n.sales, l10n.reports.
+- Grâce à notifyListeners(), le changement de langue déclenche un rebuild de l'UI.
+
+
+4. Résumé du comportement
+
+- L'application sépare clairement la présentation (screens), l'état (controllers) et l'accès aux données (services).
+- La localisation est gérée globalement par MaterialApp via AppLocalizations et LocaleProvider.
+- Les données produit et vente sont synchronisées avec un backend HTTP.
+- Le bouton de langue change la langue immédiatement sans redémarrer l'application.
