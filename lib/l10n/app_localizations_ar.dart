@@ -64,4 +64,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get language => 'اللغة';
+
+  @override
+  String get deleteConfirmation => 'هل أنت متأكد من حذف';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get productDeleted => 'تم حذف المنتج بنجاح !';
+
+  @override
+  String get manageInventory => 'إدارة المخزون';
+
+  @override
+  String get searchProducts => 'البحث عن منتج';
 }

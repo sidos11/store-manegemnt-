@@ -17,5 +17,10 @@
   "saleRecorded": "Vente enregistrée !",
   "fillAllFields": "Remplis tous les champs !",
   "totalSales": "Total des ventes",
-  "language": "Langue"
+  "language": "Langue",
+  "deleteConfirmation": "Voulez-vous vraiment supprimer",
+  "cancel": "Annuler",
+  "productDeleted": "Produit supprimé avec succès !",
+  "manageInventory": "Gestion de stock",
+  "searchProducts": "Rechercher un produit"
 }
