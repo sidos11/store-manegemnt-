@@ -17,6 +17,7 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
   String? _selectedProductName;
   double? _selectedProductPrice;
   final _quantityController = TextEditingController();
+  bool _isSubmitting = false; // لمنع المستخدم من الضغط المزدوج أثناء الإرسال
 
   @override
   void initState() {
@@ -87,7 +88,8 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
       return;
     }
 
-    final products = context.read<ProductController>().products;
+    final productController = context.read<ProductController>();
+    final products = productController.products;
     final hasProduct = products.any((p) => p.id == _selectedProductId);
 
     if (!hasProduct) {
@@ -113,15 +115,31 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
       date: now,
     );
 
-    await context.read<SaleController>().addSale(sale);
-    _showSuccessSnackBar(l10n.saleRecorded);
+    setState(() => _isSubmitting = true);
 
-    setState(() {
-      _selectedProductId = null;
-      _selectedProductName = null;
-      _selectedProductPrice = null;
-      _quantityController.clear();
-    });
+    try {
+      // 1. إرسال عملية البيع للسيرفر عبر الكنترولر المحمي بالتوكن
+      await context.read<SaleController>().addSale(sale);
+
+      // 2. تحديث المنتجات من السيرفر مباشرة لضمان المزامنة المطلقة للمخزن دون تعديل يدوي
+      await productController.loadProducts();
+
+      _showSuccessSnackBar(l10n.saleRecorded);
+
+      setState(() {
+        _selectedProductId = null;
+        _selectedProductName = null;
+        _selectedProductPrice = null;
+        _quantityController.clear();
+      });
+    } catch (e) {
+      _showErrorSnackBar(
+          'Error recording sale on server. Please check connection or JWT.');
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
@@ -221,16 +239,19 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
                       ),
                     );
                   }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      final product = products.firstWhere((p) => p.id == value);
-                      setState(() {
-                        _selectedProductId = value;
-                        _selectedProductName = product.name;
-                        _selectedProductPrice = product.price;
-                      });
-                    }
-                  },
+                  onChanged: _isSubmitting
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            final product =
+                                products.firstWhere((p) => p.id == value);
+                            setState(() {
+                              _selectedProductId = value;
+                              _selectedProductName = product.name;
+                              _selectedProductPrice = product.price;
+                            });
+                          }
+                        },
                   isExpanded: true,
                 ),
               ),
@@ -244,6 +265,7 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
               ),
               child: TextField(
                 controller: _quantityController,
+                enabled: !_isSubmitting,
                 keyboardType: TextInputType.number,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
@@ -302,7 +324,7 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _submit,
+                onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4361ee),
                   foregroundColor: Colors.white,
@@ -311,13 +333,22 @@ class _SalesScreenModernState extends State<SalesScreenModern> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
-                  l10n.add,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        l10n.add,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],
